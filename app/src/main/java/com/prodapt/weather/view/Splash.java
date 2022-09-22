@@ -1,4 +1,4 @@
-package com.prodapt.weather;
+package com.prodapt.weather.view;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.prodapt.weather.R;
 import com.prodapt.weather.utils.SharedUtils;
 
 public class Splash extends AppCompatActivity {
