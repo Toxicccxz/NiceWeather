@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/weather_title_cityname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/dp_20"
+        android:textColor="#fff"
+        android:textSize="@dimen/sp_25"/>
+
+    <Button
+        android:id="@+id/manage_city_btn"
+        android:layout_width="@dimen/dp_20"
+        android:layout_height="@dimen/dp_30"
+        android:layout_marginRight="@dimen/dp_20"
+        android:layout_marginTop="@dimen/dp_20"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/round_menu_white_20"/>
+
+</RelativeLayout>
