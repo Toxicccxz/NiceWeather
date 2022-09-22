@@ -1,36 +1,38 @@
 package com.prodapt.weather;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.os.Handler;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.prodapt.weather.utils.SharedUtils;
 
-    protected LocationManager locationManager;
-    TextView txtGPS;
+public class Splash extends AppCompatActivity {
+
+    private Context context;
+    private String TAG = "Splash";
+    private FusedLocationProviderClient fusedLocationClient;
     protected int LOCATION_PERMISSION_REQUEST_CODE = 1;
     protected double latitude, longitude;
+    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_splash);
 
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        txtGPS = findViewById(R.id.gps);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        handler = new Handler();
 
         if (checkSelfPermission(
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(
@@ -41,11 +43,8 @@ public class MainActivity extends AppCompatActivity {
                     LOCATION_PERMISSION_REQUEST_CODE);
         } else {
             //   gps functions.
-            latitude = getLastBestLocation().getLatitude();
-            longitude = getLastBestLocation().getLatitude();
-            txtGPS.setText(("latitude = " + latitude + "\n" + "longitude = " + longitude));
+            afterPermission();
         }
-
     }
 
     @Override
@@ -54,9 +53,7 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case 1:
                 if (isPermissionGranted(permissions, grantResults, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                    latitude = getLastBestLocation().getLatitude();
-                    longitude = getLastBestLocation().getLatitude();
-                    txtGPS.setText(("latitude = " + latitude + "\n" + "longitude = " + longitude));
+                    afterPermission();
                 } else {
                     Toast.makeText(this, "Can not proceed! i need permission", Toast.LENGTH_SHORT).show();
                 }
@@ -73,26 +70,30 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    private Location getLastBestLocation() {
-        @SuppressLint("MissingPermission") Location locationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        @SuppressLint("MissingPermission") Location locationNet = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+    @SuppressLint("MissingPermission")
+    public void afterPermission() {
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            // Logic to handle location object
+                            SharedUtils.putKey(context, "latitude", String.valueOf(location.getLatitude()));
+                            SharedUtils.putKey(context, "longitude", String.valueOf(location.getLongitude()));
 
-        long GPSLocationTime = 0;
-        if (null != locationGPS) { GPSLocationTime = locationGPS.getTime(); }
-
-        long NetLocationTime = 0;
-
-        if (null != locationNet) {
-            NetLocationTime = locationNet.getTime();
-        }
-
-        if ( 0 < GPSLocationTime - NetLocationTime ) {
-            return locationGPS;
-        }
-        else {
-            return locationNet;
-        }
+                            latitude = location.getLatitude();
+                            longitude = location.getLatitude();
+                        }
+                    }
+                });
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //Do something after 3000ms
+                startActivity(new Intent(Splash.this, WeatherActivity.class));
+                finish();
+            }
+        }, 3000);
     }
-
-
 }
