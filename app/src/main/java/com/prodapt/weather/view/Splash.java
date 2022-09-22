@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,11 +15,28 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.prodapt.weather.AppController;
 import com.prodapt.weather.R;
+import com.prodapt.weather.utils.LogUtils;
+import com.prodapt.weather.utils.RequestURL;
 import com.prodapt.weather.utils.SharedUtils;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Splash extends AppCompatActivity {
 
@@ -95,6 +113,64 @@ public class Splash extends AppCompatActivity {
                         }
                     }
                 });
+
+        private void request() {
+            // ロードダイアログ表示
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+
+            JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, RequestURL.API_URL, null,
+                    new Response.Listener<JSONObject>() {
+
+                        @Override
+                        public void onResponse(JSONObject response) {
+
+                            LogUtils.d(TAG, "onResponse: " + response.toString());
+
+                            pDialog.hide();
+
+                            try {
+                                String title = response.getString("title");
+
+                                JSONObject description = response.getJSONObject("description");
+                                String description_text = description.getString("text");
+
+                                JSONArray forecasts = response.getJSONArray("forecasts");
+                                for (int i = 0; i < forecasts.length(); i++) {
+                                    JSONObject forecast = forecasts.getJSONObject(i);
+                                    String date = forecast.getString("date");
+                                    String telop = forecast.getString("telop");
+//                                    adapter.add(date + ":" + telop);
+                                }
+                            } catch (JSONException e) {
+                                LogUtils.e(TAG, e.getMessage());
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            pDialog.hide();
+
+                            LogUtils.d(TAG, "Error: " + error.getMessage());
+
+                            if (error instanceof NetworkError) {
+                            } else if (error instanceof ServerError) {
+                            } else if (error instanceof AuthFailureError) {
+                            } else if (error instanceof ParseError) {
+                            } else if (error instanceof NoConnectionError) {
+                            } else if (error instanceof TimeoutError) {
+                            }
+                        }
+
+                    }
+            );
+
+            // シングルトンクラスで実行
+            AppController.getInstance().addToRequestQueue(jsonObjReq);
+        }
+
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
