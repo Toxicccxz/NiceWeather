@@ -108,68 +108,14 @@ public class Splash extends AppCompatActivity {
                             SharedUtils.putKey(context, "latitude", String.valueOf(location.getLatitude()));
                             SharedUtils.putKey(context, "longitude", String.valueOf(location.getLongitude()));
 
+                            request(location.getLatitude(), location.getLongitude());
+
                             latitude = location.getLatitude();
                             longitude = location.getLatitude();
+                            LogUtils.e(TAG, " = " + latitude + "  longitude = " + location.getLongitude() );
                         }
                     }
                 });
-
-        private void request() {
-            // ロードダイアログ表示
-            final ProgressDialog pDialog = new ProgressDialog(this);
-            pDialog.setMessage("Loading...");
-            pDialog.show();
-
-            JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, RequestURL.API_URL, null,
-                    new Response.Listener<JSONObject>() {
-
-                        @Override
-                        public void onResponse(JSONObject response) {
-
-                            LogUtils.d(TAG, "onResponse: " + response.toString());
-
-                            pDialog.hide();
-
-                            try {
-                                String title = response.getString("title");
-
-                                JSONObject description = response.getJSONObject("description");
-                                String description_text = description.getString("text");
-
-                                JSONArray forecasts = response.getJSONArray("forecasts");
-                                for (int i = 0; i < forecasts.length(); i++) {
-                                    JSONObject forecast = forecasts.getJSONObject(i);
-                                    String date = forecast.getString("date");
-                                    String telop = forecast.getString("telop");
-//                                    adapter.add(date + ":" + telop);
-                                }
-                            } catch (JSONException e) {
-                                LogUtils.e(TAG, e.getMessage());
-                            }
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            pDialog.hide();
-
-                            LogUtils.d(TAG, "Error: " + error.getMessage());
-
-                            if (error instanceof NetworkError) {
-                            } else if (error instanceof ServerError) {
-                            } else if (error instanceof AuthFailureError) {
-                            } else if (error instanceof ParseError) {
-                            } else if (error instanceof NoConnectionError) {
-                            } else if (error instanceof TimeoutError) {
-                            }
-                        }
-
-                    }
-            );
-
-            // シングルトンクラスで実行
-            AppController.getInstance().addToRequestQueue(jsonObjReq);
-        }
 
         handler.postDelayed(new Runnable() {
             @Override
@@ -179,5 +125,60 @@ public class Splash extends AppCompatActivity {
                 finish();
             }
         }, 3000);
+    }
+
+    private void request(double lat, double lon) {
+        final ProgressDialog pDialog = new ProgressDialog(this);
+        pDialog.setMessage("Loading...");
+        pDialog.show();
+
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, RequestURL.API_URL + "?lat=" + lat + "&lon=" + lon + "&appid=" + RequestURL.API_KEY , null,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        LogUtils.e(TAG, "onResponse: " + response.toString());
+
+                        pDialog.dismiss();
+
+//                        try {
+//                            String title = response.getString("title");
+//
+//                            JSONObject description = response.getJSONObject("description");
+//                            String description_text = description.getString("text");
+//
+//                            JSONArray forecasts = response.getJSONArray("forecasts");
+//                            for (int i = 0; i < forecasts.length(); i++) {
+//                                JSONObject forecast = forecasts.getJSONObject(i);
+//                                String date = forecast.getString("date");
+//                                String telop = forecast.getString("telop");
+////                                    adapter.add(date + ":" + telop);
+//                            }
+//                        } catch (JSONException e) {
+//                            LogUtils.e(TAG, e.getMessage());
+//                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        pDialog.hide();
+
+                        LogUtils.d(TAG, "Error: " + error.getMessage());
+
+                        if (error instanceof NetworkError) {
+                        } else if (error instanceof ServerError) {
+                        } else if (error instanceof AuthFailureError) {
+                        } else if (error instanceof ParseError) {
+                        } else if (error instanceof NoConnectionError) {
+                        } else if (error instanceof TimeoutError) {
+                        }
+                    }
+
+                }
+        );
+
+        AppController.getInstance().addToRequestQueue(jsonObjReq);
     }
 }
