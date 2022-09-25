@@ -3,7 +3,7 @@ package com.prodapt.weather.utils;
 import com.prodapt.weather.BuildConfig;
 
 public class LogUtils {
-    private static boolean debugMod = BuildConfig.DEBUG;
+    private static final boolean debugMod = BuildConfig.DEBUG;
 
     public static void v(String tag, String message) {
         if (debugMod)

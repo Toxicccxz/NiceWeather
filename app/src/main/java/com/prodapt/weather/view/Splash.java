@@ -216,15 +216,15 @@ public class Splash extends AppCompatActivity {
                         LogUtils.d(TAG, "Error: " + error.getMessage());
 
                         if (error instanceof NetworkError) {
-                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT);
+                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT).show();
                         } else if (error instanceof ServerError) {
-                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT);
+                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT).show();
                         } else if (error instanceof AuthFailureError) {
                         } else if (error instanceof ParseError) {
                         } else if (error instanceof NoConnectionError) {
-                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT);
+                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT).show();
                         } else if (error instanceof TimeoutError) {
-                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT);
+                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     }
 

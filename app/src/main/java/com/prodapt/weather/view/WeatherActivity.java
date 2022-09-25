@@ -8,21 +8,40 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextClock;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.bumptech.glide.Glide;
+import com.mancj.materialsearchbar.MaterialSearchBar;
+import com.prodapt.weather.AppController;
 import com.prodapt.weather.R;
 import com.prodapt.weather.model.Current;
 import com.prodapt.weather.model.Daily;
 import com.prodapt.weather.model.Rain;
 import com.prodapt.weather.model.ResponseJSON;
 import com.prodapt.weather.model.Snow;
+import com.prodapt.weather.model.Temp;
 import com.prodapt.weather.model.Weather;
 import com.prodapt.weather.model.WeatherDaily;
 import com.prodapt.weather.utils.LogUtils;
+import com.prodapt.weather.utils.RequestURL;
 import com.prodapt.weather.utils.SharedUtils;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -37,6 +56,9 @@ import java.util.Locale;
 public class WeatherActivity extends AppCompatActivity {
 
     private String TAG = "WeatherActivity";
+
+    private MaterialSearchBar searchBar;
+
     private TextView titleText;
     private TextView nowTmpTV;
     private TextView nowWeatherQltyTV;
@@ -65,6 +87,23 @@ public class WeatherActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
 
+        searchBar = findViewById(R.id.searchBar);
+        searchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
+            @Override
+            public void onSearchStateChanged(boolean enabled) {
+
+            }
+
+            @Override
+            public void onSearchConfirmed(CharSequence text) {
+                searchReRequest(text.toString());
+            }
+
+            @Override
+            public void onButtonClicked(int buttonCode) {
+
+            }
+        });
         sortBtn = findViewById(R.id.sort);
         sortBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -156,4 +195,155 @@ public class WeatherActivity extends AppCompatActivity {
         }
 
     }
+
+    private void searchReRequest(String city) {
+
+        String requestUrl = RequestURL.API_URL_CITY + "?q=" + city + "&appid=" + RequestURL.API_KEY;
+
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, requestUrl, null,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        //data
+                        try {
+                            if(response.getString("cod").equals("404")) {
+                                Toast.makeText(WeatherActivity.this, "Wrong city name!", Toast.LENGTH_SHORT);
+                            } else {Double lat = response.getJSONObject("coord").getDouble("lat");
+                                Double lon = response.getJSONObject("coord").getDouble("lon");
+                                SharedUtils.putKey(WeatherActivity.this, "GPSCity", city);
+                                request(lat,lon);}
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            LogUtils.e(TAG, e.getMessage());
+                        }
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                        Toast.makeText(WeatherActivity.this, "Wrong city name", Toast.LENGTH_SHORT).show();
+
+                        if (error instanceof NetworkError) {
+                            Toast.makeText(WeatherActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                        } else if (error instanceof ServerError) {
+                            Toast.makeText(WeatherActivity.this, "Wrong city name", Toast.LENGTH_SHORT).show();
+                        } else if (error instanceof AuthFailureError) {
+                        } else if (error instanceof ParseError) {
+                        } else if (error instanceof NoConnectionError) {
+                            Toast.makeText(WeatherActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                        } else if (error instanceof TimeoutError) {
+                            Toast.makeText(WeatherActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                }
+        );
+
+        AppController.getInstance().addToRequestQueue(jsonObjReq);
+    }
+
+    private void request(double lat, double lon) {
+
+        String requestUrl = RequestURL.API_URL + "?lat=" + lat + "&lon=" + lon + "&exclude=minutely,hourly,alerts&units=metric&appid=" + RequestURL.API_KEY;
+
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, requestUrl, null,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        //data
+                        try {
+                            LogUtils.e(TAG, "onResponse: " + response.getJSONObject("current").toString());
+                            JSONObject currentResponse = response.getJSONObject("current");
+                            JSONObject currentWeatherResponse = currentResponse.getJSONArray("weather").getJSONObject(0);
+                            JSONObject rainResponse = currentResponse.has("rain")? currentResponse.getJSONObject("rain") : null;
+                            JSONObject snowResponse = currentResponse.has("snow")? currentResponse.getJSONObject("snow") : null;
+                            JSONArray dailyArray = response.getJSONArray("daily");
+
+                            Current.setSunrise(currentResponse.getLong("sunrise"));
+                            Current.setSunset(currentResponse.getLong("sunset"));
+                            Current.setTemp(currentResponse.getDouble("temp"));
+                            Current.setFeels_like(currentResponse.getDouble("feels_like"));
+                            Current.setPressure(currentResponse.getInt("pressure"));
+                            Current.setHumidity(currentResponse.getInt("humidity"));
+                            Current.setUvi(currentResponse.getDouble("uvi"));
+                            Current.setClouds(currentResponse.getInt("clouds"));
+                            Current.setVisibility(currentResponse.getInt("visibility"));
+                            Current.setWind_speed(currentResponse.getDouble("wind_speed"));
+                            Current.setWind_deg(currentResponse.getInt("wind_deg"));
+                            Current.setWind_gust(currentResponse.getDouble("wind_gust"));
+                            Weather.setMain(currentWeatherResponse.getString("main"));
+                            Weather.setDescription(currentWeatherResponse.getString("description"));
+                            Weather.setIcon(currentWeatherResponse.getString("icon"));
+                            if (rainResponse != null) {
+                                Rain.setOne_h(rainResponse.getDouble("1h"));
+                            }
+                            if (snowResponse != null) {
+                                Snow.setOne_h(snowResponse.getDouble("1h"));
+                            }
+                            ArrayList<Daily> dailies = new ArrayList<Daily>();
+                            for(int i = 0; i < dailyArray.length(); i++){
+                                Daily dailyData = new Daily();
+
+                                Temp tempData = new Temp();
+                                tempData.setMax(dailyArray.getJSONObject(i).getJSONObject("temp").getDouble("max"));
+                                tempData.setMin(dailyArray.getJSONObject(i).getJSONObject("temp").getDouble("min"));
+
+                                WeatherDaily weatherDailyData = new WeatherDaily();
+                                weatherDailyData.setMain(dailyArray.getJSONObject(i).getJSONArray("weather").getJSONObject(0).getString("main"));
+                                weatherDailyData.setIcon(dailyArray.getJSONObject(i).getJSONArray("weather").getJSONObject(0).getString("icon"));
+
+                                ArrayList<WeatherDaily> setWeatherDailyList = new ArrayList<WeatherDaily>();
+                                setWeatherDailyList.add(weatherDailyData);
+
+                                dailyData.setDt(dailyArray.getJSONObject(i).getLong("dt"));
+                                dailyData.setTemp(tempData);
+                                dailyData.setWeatherDailyList(setWeatherDailyList);
+                                dailies.add(dailyData);
+                            }
+                            ResponseJSON.setDaily(dailies);
+
+                            titleText.setText(SharedUtils.getKey(WeatherActivity.this,"GPSCity"));
+
+
+                            finish();
+                            overridePendingTransition(0, 0);
+                            startActivity(getIntent());
+                            overridePendingTransition(0, 0);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            LogUtils.e(TAG, e.getMessage());
+                        }
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                        LogUtils.d(TAG, "Error: " + error.getMessage());
+
+                        if (error instanceof NetworkError) {
+                            Toast.makeText(WeatherActivity.this, error.getMessage(), Toast.LENGTH_SHORT);
+                        } else if (error instanceof ServerError) {
+                            Toast.makeText(WeatherActivity.this, error.getMessage(), Toast.LENGTH_SHORT);
+                        } else if (error instanceof AuthFailureError) {
+                        } else if (error instanceof ParseError) {
+                        } else if (error instanceof NoConnectionError) {
+                            Toast.makeText(WeatherActivity.this, error.getMessage(), Toast.LENGTH_SHORT);
+                        } else if (error instanceof TimeoutError) {
+                            Toast.makeText(WeatherActivity.this, error.getMessage(), Toast.LENGTH_SHORT);
+                        }
+                    }
+
+                }
+        );
+
+        AppController.getInstance().addToRequestQueue(jsonObjReq);
+    }
+
+
 }
