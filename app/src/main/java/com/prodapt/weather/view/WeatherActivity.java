@@ -1,5 +1,6 @@
 package com.prodapt.weather.view;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,28 +56,8 @@ public class WeatherActivity extends AppCompatActivity {
 
     private String TAG = "WeatherActivity";
 
-    private MaterialSearchBar searchBar;
-
     private TextView titleText;
-    private TextView nowTmpTV;
-    private TextView nowWeatherQltyTV;
-    private TextView nowToady;
-    private TextView nowDescription;
 
-    private TextView feelLike;
-    private TextView humidity;
-    private TextView visibility;
-    private TextView wind_speed;
-    private TextView rain;
-    private TextView pressure;
-
-    private LinearLayout dailyForecastLayout;
-    private TextView dailyDate;
-    private TextView dailyWeather;
-    private ImageView dailyWeatherImage;
-    private TextView dailyTemperature;
-
-    private ImageView sortBtn;
     private Boolean sort = true;
 
 
@@ -85,7 +66,7 @@ public class WeatherActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
 
-        searchBar = findViewById(R.id.searchBar);
+        MaterialSearchBar searchBar = findViewById(R.id.searchBar);
         searchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
             @Override
             public void onSearchStateChanged(boolean enabled) {
@@ -102,7 +83,7 @@ public class WeatherActivity extends AppCompatActivity {
 
             }
         });
-        sortBtn = findViewById(R.id.sort);
+        ImageView sortBtn = findViewById(R.id.sort);
         sortBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -119,12 +100,13 @@ public class WeatherActivity extends AppCompatActivity {
 
     }
 
+    @SuppressLint("SetTextI18n")
     private void showCurrentWeather() {
         titleText = findViewById(R.id.title_cityName);
-        nowTmpTV = findViewById(R.id.now_temperature);
-        nowWeatherQltyTV = findViewById(R.id.now_dayweather_qlty);
-        nowToady = findViewById(R.id.now_today);
-        nowDescription = findViewById(R.id.now_description);
+        TextView nowTmpTV = findViewById(R.id.now_temperature);
+        TextView nowWeatherQltyTV = findViewById(R.id.now_dayweather_qlty);
+        TextView nowToady = findViewById(R.id.now_today);
+        TextView nowDescription = findViewById(R.id.now_description);
         titleText.setText(SharedUtils.getKey(WeatherActivity.this,"GPSCity"));
         nowTmpTV.setText(String.valueOf(Current.getTemp()) + "℃");
         nowWeatherQltyTV.setText(Weather.getMain());
@@ -132,12 +114,12 @@ public class WeatherActivity extends AppCompatActivity {
         nowDescription.setText(Weather.getDescription());
 
 
-        feelLike = findViewById(R.id.now_feels_like);
-        humidity = findViewById(R.id.now_humidity);
-        visibility = findViewById(R.id.now_visibility);
-        wind_speed = findViewById(R.id.now_wind);
-        rain = findViewById(R.id.now_rain);
-        pressure = findViewById(R.id.now_pressure);
+        TextView feelLike = findViewById(R.id.now_feels_like);
+        TextView humidity = findViewById(R.id.now_humidity);
+        TextView visibility = findViewById(R.id.now_visibility);
+        TextView wind_speed = findViewById(R.id.now_wind);
+        TextView rain = findViewById(R.id.now_rain);
+        TextView pressure = findViewById(R.id.now_pressure);
         feelLike.setText("feels like " + Current.getFeels_like() + "℃");
         humidity.setText("humidity " + Current.getHumidity() + "%");
         visibility.setText("visibility " + Current.getVisibility() + "M");
@@ -149,13 +131,18 @@ public class WeatherActivity extends AppCompatActivity {
 
     }
 
+    @SuppressLint({"SimpleDateFormat", "SetTextI18n"})
     private void showDailyForecast(Boolean sort) {
-        dailyForecastLayout = findViewById(R.id.daily_forecast_layout);
+        LinearLayout dailyForecastLayout = findViewById(R.id.daily_forecast_layout);
         dailyForecastLayout.removeAllViews();
         LayoutInflater layoutInflater = getLayoutInflater();
         List<Daily> dailyArrayList = ResponseJSON.getDaily();
         dailyArrayList.subList(5, dailyArrayList.size()).clear();
 
+        TextView dailyDate;
+        TextView dailyWeather;
+        ImageView dailyWeatherImage;
+        TextView dailyTemperature;
         if (sort) {
             for (int i = 0; i < dailyArrayList.size(); i++) {
                 View view = layoutInflater.from(this).inflate(R.layout.daily_forecast_item, dailyForecastLayout, false);
