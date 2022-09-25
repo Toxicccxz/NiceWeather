@@ -1,8 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
+    android:background="@drawable/night"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <com.mancj.materialsearchbar.MaterialSearchBar
+        android:layout_marginHorizontal="@dimen/dp_20"
+        android:layout_marginVertical="@dimen/dp_10"
+        style="@style/MaterialSearchBarLight"
+        app:mt_speechMode="false"
+        app:mt_hint="City name"
+        app:mt_maxSuggestionsCount="10"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/searchBar" />
 
     <ScrollView
         android:id="@+id/main_sv"
@@ -18,6 +31,12 @@
             android:orientation="vertical">
 
             <include layout="@layout/title" />
+
+            <include layout="@layout/now_weather" />
+
+            <include layout="@layout/weather_index" />
+
+            <include layout="@layout/daily_forecast" />
 
         </LinearLayout>
 

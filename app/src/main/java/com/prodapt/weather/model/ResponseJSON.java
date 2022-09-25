@@ -17,9 +17,7 @@ public class ResponseJSON {
     private String timezone;
     private int timezone_offset;
     private Current current;
-    private List<Minutely> minutely;
-    private List<Hourly> hourly;
-    private List<Daily> daily;
+    public static List<Daily> daily;
     public void setLat(double lat) {
          this.lat = lat;
      }
@@ -55,24 +53,10 @@ public class ResponseJSON {
          return current;
      }
 
-    public void setMinutely(List<Minutely> minutely) {
-         this.minutely = minutely;
+    public static void setDaily(List<Daily> daily) {
+         ResponseJSON.daily = daily;
      }
-     public List<Minutely> getMinutely() {
-         return minutely;
-     }
-
-    public void setHourly(List<Hourly> hourly) {
-         this.hourly = hourly;
-     }
-     public List<Hourly> getHourly() {
-         return hourly;
-     }
-
-    public void setDaily(List<Daily> daily) {
-         this.daily = daily;
-     }
-     public List<Daily> getDaily() {
+     public static List<Daily> getDaily() {
          return daily;
      }
 

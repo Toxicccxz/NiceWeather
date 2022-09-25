@@ -26,7 +26,7 @@ public class Daily {
     private double wind_speed;
     private int wind_deg;
     private double wind_gust;
-    private List<Weather> weather;
+    private List<WeatherDaily> weatherDailyList;
     private int clouds;
     private int pop;
     private double uvi;
@@ -128,11 +128,11 @@ public class Daily {
          return wind_gust;
      }
 
-    public void setWeather(List<Weather> weather) {
-         this.weather = weather;
+    public void setWeatherDailyList(List<WeatherDaily> weatherDailyList) {
+         this.weatherDailyList = weatherDailyList;
      }
-     public List<Weather> getWeather() {
-         return weather;
+     public List<WeatherDaily> getWeatherDailyList() {
+         return weatherDailyList;
      }
 
     public void setClouds(int clouds) {

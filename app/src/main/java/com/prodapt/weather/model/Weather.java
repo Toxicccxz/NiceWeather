@@ -1,6 +1,6 @@
 /**
-  * Copyright 2022 bejson.com 
-  */
+ * Copyright 2022 bejson.com
+ */
 package com.prodapt.weather.model;
 
 /**
@@ -11,36 +11,36 @@ package com.prodapt.weather.model;
  */
 public class Weather {
 
-    private int id;
-    private String main;
-    private String description;
-    private String icon;
-    public void setId(int id) {
-         this.id = id;
-     }
-     public int getId() {
-         return id;
-     }
+    public static int id;
+    public static String main;
+    public static String description;
+    public static String icon;
+    public static void setId(int id) {
+        Weather.id = id;
+    }
+    public static int getId() {
+        return id;
+    }
 
-    public void setMain(String main) {
-         this.main = main;
-     }
-     public String getMain() {
-         return main;
-     }
+    public static void setMain(String main) {
+        Weather.main = main;
+    }
+    public static String getMain() {
+        return main;
+    }
 
-    public void setDescription(String description) {
-         this.description = description;
-     }
-     public String getDescription() {
-         return description;
-     }
+    public static void setDescription(String description) {
+        Weather.description = description;
+    }
+    public static String getDescription() {
+        return description;
+    }
 
-    public void setIcon(String icon) {
-         this.icon = icon;
-     }
-     public String getIcon() {
-         return icon;
-     }
+    public static void setIcon(String icon) {
+        Weather.icon = icon;
+    }
+    public static String getIcon() {
+        return icon;
+    }
 
 }

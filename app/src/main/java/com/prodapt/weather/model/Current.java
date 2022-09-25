@@ -12,123 +12,124 @@ import java.util.List;
  */
 public class Current {
 
-    private long dt;
-    private long sunrise;
-    private long sunset;
-    private double temp;
-    private double feels_like;
-    private int pressure;
-    private int humidity;
-    private double dew_point;
-    private double uvi;
-    private int clouds;
-    private int visibility;
-    private double wind_speed;
-    private int wind_deg;
-    private double wind_gust;
-    private List<Weather> weather;
-    public void setDt(long dt) {
-         this.dt = dt;
+    public static long dt;
+    public static long sunrise;
+    public static long sunset;
+    public static double temp;
+    public static double feels_like;
+    public static int pressure;
+    public static int humidity;
+    public static double dew_point;
+    public static double uvi;
+    public static int clouds;
+    public static int visibility;
+    public static double wind_speed;
+    public static int wind_deg;
+    public static double wind_gust;
+    public static List<Weather> weather;
+    public static List<Rain> rain;
+    public static void setDt(long dt) {
+         Current.dt = dt;
      }
-     public long getDt() {
+     public static long getDt() {
          return dt;
      }
 
-    public void setSunrise(long sunrise) {
-         this.sunrise = sunrise;
+    public static void setSunrise(long sunrise) {
+        Current.sunrise = sunrise;
      }
-     public long getSunrise() {
+     public static long getSunrise() {
          return sunrise;
      }
 
-    public void setSunset(long sunset) {
-         this.sunset = sunset;
+    public static void setSunset(long sunset) {
+         Current.sunset = sunset;
      }
-     public long getSunset() {
+     public static long getSunset() {
          return sunset;
      }
 
-    public void setTemp(double temp) {
-         this.temp = temp;
+    public static void setTemp(double temp) {
+         Current.temp = temp;
      }
-     public double getTemp() {
+     public static double getTemp() {
          return temp;
      }
 
-    public void setFeels_like(double feels_like) {
-         this.feels_like = feels_like;
+    public static void setFeels_like(double feels_like) {
+         Current.feels_like = feels_like;
      }
-     public double getFeels_like() {
+     public static double getFeels_like() {
          return feels_like;
      }
 
-    public void setPressure(int pressure) {
-         this.pressure = pressure;
+    public static void setPressure(int pressure) {
+         Current.pressure = pressure;
      }
-     public int getPressure() {
+     public static int getPressure() {
          return pressure;
      }
 
-    public void setHumidity(int humidity) {
-         this.humidity = humidity;
+    public static void setHumidity(int humidity) {
+         Current.humidity = humidity;
      }
-     public int getHumidity() {
+     public static int getHumidity() {
          return humidity;
      }
 
-    public void setDew_point(double dew_point) {
-         this.dew_point = dew_point;
+    public static void setDew_point(double dew_point) {
+         Current.dew_point = dew_point;
      }
-     public double getDew_point() {
+     public static double getDew_point() {
          return dew_point;
      }
 
-    public void setUvi(double uvi) {
-         this.uvi = uvi;
+    public static void setUvi(double uvi) {
+         Current.uvi = uvi;
      }
-     public double getUvi() {
+     public static double getUvi() {
          return uvi;
      }
 
-    public void setClouds(int clouds) {
-         this.clouds = clouds;
+    public static void setClouds(int clouds) {
+         Current.clouds = clouds;
      }
-     public int getClouds() {
+     public static int getClouds() {
          return clouds;
      }
 
-    public void setVisibility(int visibility) {
-         this.visibility = visibility;
+    public static void setVisibility(int visibility) {
+         Current.visibility = visibility;
      }
-     public int getVisibility() {
+     public static int getVisibility() {
          return visibility;
      }
 
-    public void setWind_speed(double wind_speed) {
-         this.wind_speed = wind_speed;
+    public static void setWind_speed(double wind_speed) {
+         Current.wind_speed = wind_speed;
      }
-     public double getWind_speed() {
+     public static double getWind_speed() {
          return wind_speed;
      }
 
-    public void setWind_deg(int wind_deg) {
-         this.wind_deg = wind_deg;
+    public static void setWind_deg(int wind_deg) {
+         Current.wind_deg = wind_deg;
      }
-     public int getWind_deg() {
+     public static int getWind_deg() {
          return wind_deg;
      }
 
-    public void setWind_gust(double wind_gust) {
-         this.wind_gust = wind_gust;
+    public static void setWind_gust(double wind_gust) {
+         Current.wind_gust = wind_gust;
      }
-     public double getWind_gust() {
+     public static double getWind_gust() {
          return wind_gust;
      }
 
-    public void setWeather(List<Weather> weather) {
-         this.weather = weather;
+    public static void setWeather(List<Weather> weather) {
+         Current.weather = weather;
      }
-     public List<Weather> getWeather() {
+     public static List<Weather> getWeather() {
          return weather;
      }
 

@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -30,6 +29,14 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.prodapt.weather.AppController;
 import com.prodapt.weather.R;
+import com.prodapt.weather.model.Current;
+import com.prodapt.weather.model.Daily;
+import com.prodapt.weather.model.Rain;
+import com.prodapt.weather.model.ResponseJSON;
+import com.prodapt.weather.model.Snow;
+import com.prodapt.weather.model.Temp;
+import com.prodapt.weather.model.Weather;
+import com.prodapt.weather.model.WeatherDaily;
 import com.prodapt.weather.utils.LogUtils;
 import com.prodapt.weather.utils.RequestURL;
 import com.prodapt.weather.utils.SharedUtils;
@@ -38,6 +45,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Splash extends AppCompatActivity {
 
     private Context context;
@@ -45,7 +55,9 @@ public class Splash extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
     protected int LOCATION_PERMISSION_REQUEST_CODE = 1;
     protected double latitude, longitude;
+    protected String GPSCity;
     private Handler handler;
+    private ResponseJSON responseJSON;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +71,7 @@ public class Splash extends AppCompatActivity {
         context = Splash.this;
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         handler = new Handler();
+        responseJSON = new ResponseJSON();
 
         if (checkSelfPermission(
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(
@@ -105,14 +118,14 @@ public class Splash extends AppCompatActivity {
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
                             // Logic to handle location object
-                            SharedUtils.putKey(context, "latitude", String.valueOf(location.getLatitude()));
-                            SharedUtils.putKey(context, "longitude", String.valueOf(location.getLongitude()));
 
                             request(location.getLatitude(), location.getLongitude());
 
                             latitude = location.getLatitude();
                             longitude = location.getLatitude();
-                            LogUtils.e(TAG, " = " + latitude + "  longitude = " + location.getLongitude() );
+
+                            requestCity(location.getLatitude(), location.getLongitude());
+
                         }
                     }
                 });
@@ -128,57 +141,140 @@ public class Splash extends AppCompatActivity {
     }
 
     private void request(double lat, double lon) {
-        final ProgressDialog pDialog = new ProgressDialog(this);
-        pDialog.setMessage("Loading...");
-        pDialog.show();
 
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, RequestURL.API_URL + "?lat=" + lat + "&lon=" + lon + "&appid=" + RequestURL.API_KEY , null,
+        String requestUrl = RequestURL.API_URL + "?lat=" + lat + "&lon=" + lon + "&exclude=minutely,hourly,alerts&units=metric&appid=" + RequestURL.API_KEY;
+
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, requestUrl, null,
                 new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
+                        //data
+                        try {
+                            LogUtils.e(TAG, "onResponse: " + response.getJSONObject("current").toString());
+                            JSONObject currentResponse = response.getJSONObject("current");
+                            JSONObject currentWeatherResponse = currentResponse.getJSONArray("weather").getJSONObject(0);
+                            JSONObject rainResponse = currentResponse.has("rain")? currentResponse.getJSONObject("rain") : null;
+                            JSONObject snowResponse = currentResponse.has("snow")? currentResponse.getJSONObject("snow") : null;
+                            JSONArray dailyArray = response.getJSONArray("daily");
 
-                        LogUtils.e(TAG, "onResponse: " + response.toString());
+                            Current.setSunrise(currentResponse.getLong("sunrise"));
+                            Current.setSunset(currentResponse.getLong("sunset"));
+                            Current.setTemp(currentResponse.getDouble("temp"));
+                            Current.setFeels_like(currentResponse.getDouble("feels_like"));
+                            Current.setPressure(currentResponse.getInt("pressure"));
+                            Current.setHumidity(currentResponse.getInt("humidity"));
+                            Current.setUvi(currentResponse.getDouble("uvi"));
+                            Current.setClouds(currentResponse.getInt("clouds"));
+                            Current.setVisibility(currentResponse.getInt("visibility"));
+                            Current.setWind_speed(currentResponse.getDouble("wind_speed"));
+                            Current.setWind_deg(currentResponse.getInt("wind_deg"));
+                            Current.setWind_gust(currentResponse.getDouble("wind_gust"));
+                            Weather.setMain(currentWeatherResponse.getString("main"));
+                            Weather.setDescription(currentWeatherResponse.getString("description"));
+                            Weather.setIcon(currentWeatherResponse.getString("icon"));
+                            if (rainResponse != null) {
+                                Rain.setOne_h(rainResponse.getDouble("1h"));
+                            }
+                            if (snowResponse != null) {
+                                Snow.setOne_h(snowResponse.getDouble("1h"));
+                            }
+                            ArrayList<Daily> dailies = new ArrayList<Daily>();
+                            for(int i = 0; i < dailyArray.length(); i++){
+                                Daily dailyData = new Daily();
 
-                        pDialog.dismiss();
+                                Temp tempData = new Temp();
+                                tempData.setMax(dailyArray.getJSONObject(i).getJSONObject("temp").getDouble("max"));
+                                tempData.setMin(dailyArray.getJSONObject(i).getJSONObject("temp").getDouble("min"));
 
-//                        try {
-//                            String title = response.getString("title");
-//
-//                            JSONObject description = response.getJSONObject("description");
-//                            String description_text = description.getString("text");
-//
-//                            JSONArray forecasts = response.getJSONArray("forecasts");
-//                            for (int i = 0; i < forecasts.length(); i++) {
-//                                JSONObject forecast = forecasts.getJSONObject(i);
-//                                String date = forecast.getString("date");
-//                                String telop = forecast.getString("telop");
-////                                    adapter.add(date + ":" + telop);
-//                            }
-//                        } catch (JSONException e) {
-//                            LogUtils.e(TAG, e.getMessage());
-//                        }
+                                WeatherDaily weatherDailyData = new WeatherDaily();
+                                weatherDailyData.setMain(dailyArray.getJSONObject(i).getJSONArray("weather").getJSONObject(0).getString("main"));
+                                weatherDailyData.setIcon(dailyArray.getJSONObject(i).getJSONArray("weather").getJSONObject(0).getString("icon"));
+
+                                ArrayList<WeatherDaily> setWeatherDailyList = new ArrayList<WeatherDaily>();
+                                setWeatherDailyList.add(weatherDailyData);
+
+                                dailyData.setDt(dailyArray.getJSONObject(i).getLong("dt"));
+                                dailyData.setTemp(tempData);
+                                dailyData.setWeatherDailyList(setWeatherDailyList);
+                                dailies.add(dailyData);
+                            }
+                            ResponseJSON.setDaily(dailies);
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            LogUtils.e(TAG, e.getMessage());
+                        }
+
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        pDialog.hide();
 
                         LogUtils.d(TAG, "Error: " + error.getMessage());
 
                         if (error instanceof NetworkError) {
+                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT);
                         } else if (error instanceof ServerError) {
+                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT);
                         } else if (error instanceof AuthFailureError) {
                         } else if (error instanceof ParseError) {
                         } else if (error instanceof NoConnectionError) {
+                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT);
                         } else if (error instanceof TimeoutError) {
+                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT);
                         }
                     }
 
                 }
         );
 
+        AppController.getInstance().addToRequestQueue(jsonObjReq);
+    }
+
+    private void requestCity(double lat, double lon){
+        String requestUrl = RequestURL.GOOGLEMAP_URL + "?latlng=" + lat + "," + lon + "&location_type=APPROXIMATE&result_type=administrative_area_level_2&key=" + RequestURL.GOOGLE_API_KEY;
+
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, requestUrl, null,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        //data
+                        try {
+                            String GPSCity = response.getJSONArray("results").getJSONObject(0).getJSONArray("address_components").getJSONObject(0).getString("short_name");
+                            LogUtils.e(TAG, "city: " + GPSCity);
+                            SharedUtils.putKey(Splash.this, "GPSCity", GPSCity);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            LogUtils.e(TAG, e.getMessage());
+                        }
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                        LogUtils.d(TAG, "Error: " + error.getMessage());
+
+                        if (error instanceof NetworkError) {
+                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT);
+                        } else if (error instanceof ServerError) {
+                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT);
+                        } else if (error instanceof AuthFailureError) {
+                        } else if (error instanceof ParseError) {
+                        } else if (error instanceof NoConnectionError) {
+                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT);
+                        } else if (error instanceof TimeoutError) {
+                            Toast.makeText(Splash.this, error.getMessage(), Toast.LENGTH_SHORT);
+                        }
+                    }
+
+                }
+        );
         AppController.getInstance().addToRequestQueue(jsonObjReq);
     }
 }
